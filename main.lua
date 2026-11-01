@@ -1,8 +1,12 @@
+--made by BORTHAISHACKIER
+local IgnoreAssetLoading = true -- turn on if asset is under rewiew
+local SeeCreation = true -- turn on if loading is taking a while
 local Selected = world
 local Ignore = {}
 local Objects = game and game.HttpGet and loadstring and loadstring(game:HttpGet("https://raw.githubusercontent.com/BROTHAISHACKIER/PolyUse/refs/heads/main/objects.lua"))() or require(script.Objects)
 local Icons = game and game.HttpGet and loadstring and loadstring(game:HttpGet("https://raw.githubusercontent.com/BROTHAISHACKIER/PolyUse/refs/heads/main/icons.lua"))() or require(script.Icons)
 local LoadedIcons = {}
+local InsAmnt = world.InstanceCount
 local function RandomString()
     local Chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$¤%&/{[()]}=?+-\\'¨.,<>| §"
     local Result = ""
@@ -20,6 +24,7 @@ GUI.AvoidCoreUI = true
 table.insert(Ignore,GUI)
 
 local Loader = Instance.New("UILabel", GUI)
+Loader.Text = "Waiting for game to be finished loading"
 
 local Amount = 0
 
@@ -34,17 +39,19 @@ end
 local Index = 0
 Loader.Text = "Loading Assets "..Index.."/"..Amount
 for _,v in pairs(LoadedIcons) do
-    coroutine.wrap(function()
-        if v.Loading then
-            v.Loaded:Wait()
-        end
-        Index += 1
-        Loader.Text = "Loading Assets "..Index.."/"..Amount
-    end)()
+    if not IgnoreAssetLoading then
+        coroutine.wrap(function()
+            if v.Loading then
+                v.Loaded:Wait()
+            end
+            Index += 1
+            Loader.Text = "Loading Assets "..Index.."/"..Amount
+        end)()
+    end
 end
 repeat
 	wait(0.01)
-until Index >= Amount
+until Index >= Amount or IgnoreAssetLoading
 Loader.Text = "Loading UI"
 local Explorer = Instance.New("UIView",GUI)
 Explorer.Name = RandomString()
@@ -54,7 +61,7 @@ Explorer.SizeOffset = Vector2.New(350,0)
 Explorer.SizeRelative = Vector2.New(0,0.5)
 Explorer.PivotPoint = Vector2.New(1,0)
 Explorer.Color = Color.FromRGB(31,31,31)
-Explorer.Visible = false
+Explorer.Visible = SeeCreation
 
 local Properties = Instance.New("UIView",GUI)
 Properties.Name = RandomString()
@@ -64,7 +71,7 @@ Properties.SizeOffset = Vector2.New(350,0)
 Properties.SizeRelative = Vector2.New(0,0.5)
 Properties.PivotPoint = Vector2.One
 Properties.Color = Color.FromRGB(31,31,31)
-Properties.Visible = false
+Properties.Visible = SeeCreation
 
 local ExpBGM = Instance.New("UIView", Explorer)
 ExpBGM.Name = RandomString()
@@ -825,9 +832,30 @@ Update.Invoked:Connect(function(Object)
 	end
 end)
 Update:Invoke(Selected)
-
+local Round = 0
+local Finished = false
 local function Make(Object, Holder, Offsetpar)
 	wait()
+    if not Finished then
+        Loader.Text = "Creating Hierarchy "..Round.."/"..InsAmnt
+        Round += 1
+    end
+    local IsWorld = Object == world
+    local WorldGC = {
+        Environment,
+        Lighting,
+        Players,
+        ScriptService,
+        Hidden,
+        ServerHidden,
+        PlayerDefaults,
+        PlayerGUI,
+        Achievements,
+        CoreUI,
+        Stats,
+        Teams,
+        Capture
+    }
 	if table.find(Ignore,Object) then return end
 	local OGH = Instance.New("UIView",Holder)
 	OGH.Name = RandomString()
@@ -883,6 +911,13 @@ local function Make(Object, Holder, Offsetpar)
 	PropOpen.Color = Color.Transparent
 	PropOpen.Text = ""
 	
+    local function HasChild()
+		for _,v in ipairs(IsWorld and WorldGC or Object:GetChildren()) do
+			if not table.find(Ignore,v) then return true end
+		end
+		return false
+	end
+
 	local Indicator = Instance.New("UIImage",OG)
 	Indicator.Name = RandomString()
 	Indicator.Image = LoadedIcons["ArrowClosed"]
@@ -891,7 +926,7 @@ local function Make(Object, Holder, Offsetpar)
 	Indicator.SizeOffset = Vector2.New(20,20)
 	Indicator.SizeRelative = Vector2.Zero
 	Indicator.PivotPoint = Vector2.New(1,0.5)
-	Indicator.Visible = #Object:GetChildren() > 0
+	Indicator.Visible = HasChild()
 	
 	local Closer = Instance.New("UIButton",OGH)
 	Closer.Name = RandomString()
@@ -902,7 +937,8 @@ local function Make(Object, Holder, Offsetpar)
 	Closer.PivotPoint = Vector2.Zero
 	Closer.Text = ""
 	Closer.Color = Color.Transparent
-	
+	Closer.Visible = HasChild()
+
 	local CHolder = Instance.New("UIVLayout", Holder)
 	CHolder.Name = RandomString()
 	CHolder.PositionOffset = Vector2.Zero
@@ -929,6 +965,7 @@ local function Make(Object, Holder, Offsetpar)
 	ExpSearch.Changed:Connect(function(Input)
 		if Input == "" then
 			CHolder.Visible = bfr
+            Closer.Visible = CHolder.Visible
 			OGH.Visible = true
 			Indicator.Image = CHolder.Visible and Indicator.Visible and LoadedIcons["ArrowOpen"] or LoadedIcons["ArrowClosed"]
 		else
@@ -940,10 +977,12 @@ local function Make(Object, Holder, Offsetpar)
 			if Yeah then
 				OGH.Visible = true
 				CHolder.Visible = true
+                Closer.Visible = CHolder.Visible
 				Indicator.Image = CHolder.Visible and Indicator.Visible and LoadedIcons["ArrowOpen"] or LoadedIcons["ArrowClosed"]
 			else
 				OGH.Visible = false
 				CHolder.Visible = false
+                Closer.Visible = CHolder.Visible
 				Indicator.Image = CHolder.Visible and Indicator.Visible and LoadedIcons["ArrowOpen"] or LoadedIcons["ArrowClosed"]
 			end
 		end
@@ -951,24 +990,21 @@ local function Make(Object, Holder, Offsetpar)
 	
 	Closer.Clicked:Connect(function()
 		CHolder.Visible = not CHolder.Visible and Indicator.Visible
+        Closer.Visible = CHolder.Visible
 		bfr = CHolder.Visible
 		Indicator.Image = CHolder.Visible and Indicator.Visible and LoadedIcons["ArrowOpen"] or LoadedIcons["ArrowClosed"]
 	end)
-	for _,v in ipairs(Object:GetChildren()) do
+	for _,v in ipairs(IsWorld and WorldGC or Object:GetChildren()) do
 		Make(v,CHolder,Offsetpar + -20)
-	end
-	local function HasChild()
-		for _,v in ipairs(Object:GetChildren()) do
-			if not table.find(Ignore,v) then return true end
-		end
-		return false
 	end
 	Object.ChildAdded:Connect(function(v)
 		Indicator.Visible = HasChild()
+        Closer.Visible = CHolder.Visible
 		Make(v,CHolder,Offsetpar + -20)
 	end)
 	Object.ChildRemoved:Connect(function(v)
 		Indicator.Visible = HasChild()
+        Closer.Visible = CHolder.Visible
 		CHolder[v]:Destroy()
 	end)
 	Object.PropertyChanged:Connect(function(Prop)
@@ -983,3 +1019,4 @@ Make(Selected,ExpUIVL,0)
 Explorer.Visible = true
 Properties.Visible = true
 Loader:Destroy()
+Finished = true
