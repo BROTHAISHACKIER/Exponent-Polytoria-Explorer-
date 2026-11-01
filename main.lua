@@ -21,7 +21,8 @@ table.insert(Ignore,GUI)
 
 local Loader = Instance.New("UILabel", GUI)
 
-local Amount = #Icons
+local Amount = 0
+
 for _ in pairs(Icons) do
     Amount += 1
 end
@@ -33,12 +34,17 @@ end
 local Index = 0
 Loader.Text = "Loading Assets "..Index.."/"..Amount
 for _,v in pairs(LoadedIcons) do
-	Index += 1
-	if v.Loading then
-		v.Loaded:Wait()
-	end
-	Loader.Text = "Loading Assets "..Index.."/"..Amount
+    coroutine.wrap(function()
+        if v.Loading then
+            v.Loaded:Wait()
+        end
+        Index += 1
+        Loader.Text = "Loading Assets "..Index.."/"..Amount
+    end)()
 end
+repeat
+	wait(0.01)
+until Index >= Amount
 Loader.Text = "Loading UI"
 local Explorer = Instance.New("UIView",GUI)
 Explorer.Name = RandomString()
@@ -187,7 +193,7 @@ Update.Invoked:Connect(function(Object)
 		v:Destroy()
 	end
 	local function Update(ClassName)
-		if Objects[ClassName] then
+		if Objects[ClassName] and Objects[ClassName].Properties ~= {} then
 			local Class = Objects[ClassName]
 			local Icon = Class.Icon and LoadedIcons[Class.Icon] or LoadedIcons[ClassName] or LoadedIcons["Unknown"]
 			local DropDown = Instance.New("UIView", ProUIVL)
@@ -278,6 +284,7 @@ Update.Invoked:Connect(function(Object)
 					Box.PositionOffset = Vector2.Zero
 					Box.PositionRelative = Vector2.Zero
 					Box.PivotPoint = Vector2.Zero
+					Box.JustifyText = Enums.HorizontalAlignment.Center
 					Box.Text = tostring(Object[Property])
 					Box.FontSize = 12
 					Box.Placeholder = ""
@@ -302,6 +309,390 @@ Update.Invoked:Connect(function(Object)
 						end)
 						Box.Text = tostring(Object[Property])
 					end)
+				elseif Type == "Vector2" then
+					local X = Instance.New("UITextInput", EditHolder)
+					X.Name = RandomString()
+					X.SizeOffset = Vector2.Zero
+					X.SizeRelative = Vector2.New(0.49,1)
+					X.PositionOffset = Vector2.Zero
+					X.PositionRelative = Vector2.Zero
+					X.PivotPoint = Vector2.Zero
+					X.JustifyText = Enums.HorizontalAlignment.Center
+					X.Text = tostring(Object[Property].X)
+					X.FontSize = 12
+					X.Placeholder = ""
+					X.TextColor = Color.FromRGB(210,20,60)
+					X.BorderColor = Color.FromRGB(35,150,245)
+					X.Color = Color.FromRGB(22,22,22)
+					X.CornerRadius = 5.5
+					X.FocusEnter:Connect(function()
+						X.BorderWidth = 2.5
+					end)
+					X.FocusExit:Connect(function()
+						X.BorderWidth = 0
+					end)
+					X.Submitted:Connect(function(Text)
+						pcall(function()
+							Object[Property] = Vector2.New(tonumber(Text),Object[Property].Y)
+						end)
+						X.Text = tostring(Object[Property].X)
+					end)
+					local Y = Instance.New("UITextInput", EditHolder)
+					Y.Name = RandomString()
+					Y.SizeOffset = Vector2.Zero
+					Y.SizeRelative = Vector2.New(0.49,1)
+					Y.PositionOffset = Vector2.Zero
+					Y.PositionRelative = Vector2.New(1,0)
+					Y.PivotPoint = Vector2.New(1,0)
+					Y.JustifyText = Enums.HorizontalAlignment.Center
+					Y.Text = tostring(Object[Property].Y)
+					Y.FontSize = 12
+					Y.Placeholder = ""
+					Y.TextColor = Color.FromRGB(50,200,50)
+					Y.BorderColor = Color.FromRGB(35,150,245)
+					Y.Color = Color.FromRGB(22,22,22)
+					Y.CornerRadius = 5.5
+					Y.FocusEnter:Connect(function()
+						Y.BorderWidth = 2.5
+					end)
+					Y.FocusExit:Connect(function()
+						Y.BorderWidth = 0
+					end)
+					Y.Submitted:Connect(function(Text)
+						pcall(function()
+							Object[Property] = Vector2.New(Object[Property].X,tonumber(Text))
+						end)
+						Y.Text = tostring(Object[Property].Y)
+					end)
+					Object.PropertyChanged:Connect(function(Prop)
+						if Prop == Property then
+							X.Text = tostring(Object[Property].X)
+							Y.Text = tostring(Object[Property].Y)
+						end
+					end)
+				elseif Type == "Vector3" then
+					local X = Instance.New("UITextInput", EditHolder)
+					X.Name = RandomString()
+					X.SizeOffset = Vector2.Zero
+					X.SizeRelative = Vector2.New(1/3 - 0.02,1)
+					X.PositionOffset = Vector2.Zero
+					X.PositionRelative = Vector2.Zero
+					X.PivotPoint = Vector2.Zero
+					X.JustifyText = Enums.HorizontalAlignment.Center
+					X.Text = tostring(Object[Property].X)
+					X.FontSize = 12
+					X.Placeholder = ""
+					X.TextColor = Color.FromRGB(210,20,60)
+					X.BorderColor = Color.FromRGB(35,150,245)
+					X.Color = Color.FromRGB(22,22,22)
+					X.CornerRadius = 5.5
+					X.FocusEnter:Connect(function()
+						X.BorderWidth = 2.5
+					end)
+					X.FocusExit:Connect(function()
+						X.BorderWidth = 0
+					end)
+					X.Submitted:Connect(function(Text)
+						pcall(function()
+							Object[Property] = Vector3.New(tonumber(Text),Object[Property].Y,Object[Property].Z)
+						end)
+						X.Text = tostring(Object[Property].X)
+					end)
+					local Y = Instance.New("UITextInput", EditHolder)
+					Y.Name = RandomString()
+					Y.SizeOffset = Vector2.Zero
+					Y.SizeRelative = Vector2.New(1/3 - 0.02,1)
+					Y.PositionOffset = Vector2.Zero
+					Y.PositionRelative = Vector2.New(0.5,0)
+					Y.PivotPoint = Vector2.New(0.5,0)
+					Y.JustifyText = Enums.HorizontalAlignment.Center
+					Y.Text = tostring(Object[Property].Y)
+					Y.FontSize = 12
+					Y.Placeholder = ""
+					Y.TextColor = Color.FromRGB(50,200,50)
+					Y.BorderColor = Color.FromRGB(35,150,245)
+					Y.Color = Color.FromRGB(22,22,22)
+					Y.CornerRadius = 5.5
+					Y.FocusEnter:Connect(function()
+						Y.BorderWidth = 2.5
+					end)
+					Y.FocusExit:Connect(function()
+						Y.BorderWidth = 0
+					end)
+					Y.Submitted:Connect(function(Text)
+						pcall(function()
+							Object[Property] = Vector3.New(Object[Property].X,tonumber(Text),Object[Property].Z)
+						end)
+						Y.Text = tostring(Object[Property].Y)
+					end)
+					local Z = Instance.New("UITextInput", EditHolder)
+					Z.Name = RandomString()
+					Z.SizeOffset = Vector2.Zero
+					Z.SizeRelative = Vector2.New(1/3 - 0.02,1)
+					Z.PositionOffset = Vector2.Zero
+					Z.PositionRelative = Vector2.New(1,0)
+					Z.PivotPoint = Vector2.New(1,0)
+					Z.JustifyText = Enums.HorizontalAlignment.Center
+					Z.Text = tostring(Object[Property].Z)
+					Z.FontSize = 12
+					Z.Placeholder = ""
+					Z.TextColor = Color.FromRGB(30,145,255)
+					Z.BorderColor = Color.FromRGB(35,150,245)
+					Z.Color = Color.FromRGB(22,22,22)
+					Z.CornerRadius = 5.5
+					Z.FocusEnter:Connect(function()
+						Z.BorderWidth = 2.5
+					end)
+					Z.FocusExit:Connect(function()
+						Z.BorderWidth = 0
+					end)
+					Z.Submitted:Connect(function(Text)
+						pcall(function()
+							Object[Property] = Vector3.New(Object[Property].X,Object[Property].Y,tonumber(Text))
+						end)
+						Z.Text = tostring(Object[Property].Z)
+					end)
+					Object.PropertyChanged:Connect(function(Prop)
+						if Prop == Property then
+							X.Text = tostring(Object[Property].X)
+							Y.Text = tostring(Object[Property].Y)
+							Z.Text = tostring(Object[Property].Z)
+						end
+					end)
+				elseif Type == "Color" then
+					local R = Instance.New("UITextInput", EditHolder)
+					R.Name = RandomString()
+					R.SizeOffset = Vector2.Zero
+					R.SizeRelative = Vector2.New(1/4 - 0.03,1)
+					R.PositionOffset = Vector2.Zero
+					R.PositionRelative = Vector2.Zero
+					R.PivotPoint = Vector2.Zero
+					R.JustifyText = Enums.HorizontalAlignment.Left
+					R.Text = tostring(math.floor(Object[Property].R*255))
+					R.FontSize = 12
+					R.Placeholder = ""
+					R.TextColor = Color.FromRGB(210,20,60)
+					R.BorderColor = Color.FromRGB(35,150,245)
+					R.Color = Color.FromRGB(22,22,22)
+					R.CornerRadius = 5.5
+					R.FocusEnter:Connect(function()
+						R.BorderWidth = 2.5
+					end)
+					R.FocusExit:Connect(function()
+						R.BorderWidth = 0
+					end)
+					R.Submitted:Connect(function(Text)
+						pcall(function()
+							Object[Property] = Color.FromRGB(tonumber(Text),Object[Property].G,Object[Property].B,Object[Property].A)
+						end)
+						R.Text = tostring(Object[Property].R*255)
+					end)
+					local G = Instance.New("UITextInput", EditHolder)
+					G.Name = RandomString()
+					G.SizeOffset = Vector2.Zero
+					G.SizeRelative = Vector2.New(1/4 - 0.03,1)
+					G.PositionOffset = Vector2.Zero
+					G.PositionRelative = Vector2.New(1/4 + 0.01,0)
+					G.PivotPoint = Vector2.Zero
+					G.JustifyText = Enums.HorizontalAlignment.Left
+					G.Text = tostring(math.floor(Object[Property].G*255))
+					G.FontSize = 12
+					G.Placeholder = ""
+					G.TextColor = Color.FromRGB(50,200,50)
+					G.BorderColor = Color.FromRGB(35,150,245)
+					G.Color = Color.FromRGB(22,22,22)
+					G.CornerRadius = 5.5
+					G.FocusEnter:Connect(function()
+						G.BorderWidth = 2.5
+					end)
+					G.FocusExit:Connect(function()
+						G.BorderWidth = 0
+					end)
+					G.Submitted:Connect(function(Text)
+						pcall(function()
+							Object[Property] = Color.FromRGB(Object[Property].R,tonumber(Text),Object[Property].B,Object[Property].A)
+						end)
+						G.Text = tostring(Object[Property].G)
+					end)
+					local B = Instance.New("UITextInput", EditHolder)
+					B.Name = RandomString()
+					B.SizeOffset = Vector2.Zero
+					B.SizeRelative = Vector2.New(1/4 - 0.03,1)
+					B.PositionOffset = Vector2.Zero
+					B.PositionRelative = Vector2.New(2/4 + 0.02,0)
+					B.PivotPoint = Vector2.Zero
+					B.JustifyText = Enums.HorizontalAlignment.Left
+					B.Text = tostring(math.floor(Object[Property].B*255))
+					B.FontSize = 12
+					B.Placeholder = ""
+					B.TextColor = Color.FromRGB(30,145,255)
+					B.BorderColor = Color.FromRGB(35,150,245)
+					B.Color = Color.FromRGB(22,22,22)
+					B.CornerRadius = 5.5
+					B.FocusEnter:Connect(function()
+						B.BorderWidth = 2.5
+					end)
+					B.FocusExit:Connect(function()
+						B.BorderWidth = 0
+					end)
+					B.Submitted:Connect(function(Text)
+						pcall(function()
+							Object[Property] = Color.FromRGB(Object[Property].R,Object[Property].G,tonumber(Text),Object[Property].A)
+						end)
+						B.Text = tostring(Object[Property].B)
+					end)
+					local A = Instance.New("UITextInput", EditHolder)
+					A.Name = RandomString()
+					A.SizeOffset = Vector2.Zero
+					A.SizeRelative = Vector2.New(1/4 - 0.03,1)
+					A.PositionOffset = Vector2.Zero
+					A.PositionRelative = Vector2.New(1,0)
+					A.PivotPoint = Vector2.New(1,0)
+					A.JustifyText = Enums.HorizontalAlignment.Left
+					A.Text = tostring(math.floor(Object[Property].A*255))
+					A.FontSize = 12
+					A.Placeholder = ""
+					A.TextColor = Color.FromRGB(200,200,200)
+					A.BorderColor = Color.FromRGB(35,150,245)
+					A.Color = Color.FromRGB(22,22,22)
+					A.CornerRadius = 5.5
+					A.FocusEnter:Connect(function()
+						A.BorderWidth = 2.5
+					end)
+					A.FocusExit:Connect(function()
+						A.BorderWidth = 0
+					end)
+					A.Submitted:Connect(function(Text)
+						pcall(function()
+							Object[Property] = Color.FromRGB(Object[Property].R,Object[Property].G,Object[Property].B,tonumber(Text))
+						end)
+						A.Text = tostring(Object[Property].A)
+					end)
+					Object.PropertyChanged:Connect(function(Prop)
+						if Prop == Property then
+							R.Text = tostring(math.floor(Object[Property].R*255))
+							G.Text = tostring(math.floor(Object[Property].G*255))
+							B.Text = tostring(math.floor(Object[Property].B*255))
+							A.Text = tostring(math.floor(Object[Property].A*255))
+						end
+					end)
+				elseif Type == "Quaternion" then
+					local X = Instance.New("UITextInput", EditHolder)
+					X.Name = RandomString()
+					X.SizeOffset = Vector2.Zero
+					X.SizeRelative = Vector2.New(1/4 - 0.03,1)
+					X.PositionOffset = Vector2.Zero
+					X.PositionRelative = Vector2.Zero
+					X.PivotPoint = Vector2.Zero
+					X.JustifyText = Enums.HorizontalAlignment.Left
+					X.Text = tostring(Object[Property].X)
+					X.FontSize = 12
+					X.Placeholder = ""
+					X.TextColor = Color.FromRGB(210,20,60)
+					X.BorderColor = Color.FromRGB(35,150,245)
+					X.Color = Color.FromRGB(22,22,22)
+					X.CornerRadius = 5.5
+					X.FocusEnter:Connect(function()
+						X.BorderWidth = 2.5
+					end)
+					X.FocusExit:Connect(function()
+						X.BorderWidth = 0
+					end)
+					X.Submitted:Connect(function(Text)
+						pcall(function()
+							Object[Property] = Quaternion.New(tonumber(Text),Object[Property].Y,Object[Property].Z,Object[Property].W)
+						end)
+						X.Text = tostring(Object[Property].X*255)
+					end)
+					local Y = Instance.New("UITextInput", EditHolder)
+					Y.Name = RandomString()
+					Y.SizeOffset = Vector2.Zero
+					Y.SizeRelative = Vector2.New(1/4 - 0.03,1)
+					Y.PositionOffset = Vector2.Zero
+					Y.PositionRelative = Vector2.New(1/4 + 0.01,0)
+					Y.PivotPoint = Vector2.Zero
+					Y.JustifyText = Enums.HorizontalAlignment.Left
+					Y.Text = tostring(Object[Property].Y)
+					Y.FontSize = 12
+					Y.Placeholder = ""
+					Y.TextColor = Color.FromRGB(50,200,50)
+					Y.BorderColor = Color.FromRGB(35,150,245)
+					Y.Color = Color.FromRGB(22,22,22)
+					Y.CornerRadius = 5.5
+					Y.FocusEnter:Connect(function()
+						Y.BorderWidth = 2.5
+					end)
+					Y.FocusExit:Connect(function()
+						Y.BorderWidth = 0
+					end)
+					Y.Submitted:Connect(function(Text)
+						pcall(function()
+							Object[Property] = Quaternion.New(Object[Property].X,tonumber(Text),Object[Property].Z,Object[Property].W)
+						end)
+						Y.Text = tostring(Object[Property].Y)
+					end)
+					local Z = Instance.New("UITextInput", EditHolder)
+					Z.Name = RandomString()
+					Z.SizeOffset = Vector2.Zero
+					Z.SizeRelative = Vector2.New(1/4 - 0.03,1)
+					Z.PositionOffset = Vector2.Zero
+					Z.PositionRelative = Vector2.New(2/4 + 0.02,0)
+					Z.PivotPoint = Vector2.Zero
+					Z.JustifyText = Enums.HorizontalAlignment.Left
+					Z.Text = tostring(Object[Property].Z)
+					Z.FontSize = 12
+					Z.Placeholder = ""
+					Z.TextColor = Color.FromRGB(30,145,255)
+					Z.BorderColor = Color.FromRGB(35,150,245)
+					Z.Color = Color.FromRGB(22,22,22)
+					Z.CornerRadius = 5.5
+					Z.FocusEnter:Connect(function()
+						Z.BorderWidth = 2.5
+					end)
+					Z.FocusExit:Connect(function()
+						Z.BorderWidth = 0
+					end)
+					Z.Submitted:Connect(function(Text)
+						pcall(function()
+							Object[Property] = Quaternion.New(Object[Property].X,Object[Property].Y,tonumber(Text),Object[Property].W)
+						end)
+						Z.Text = tostring(Object[Property].Z)
+					end)
+					local W = Instance.New("UITextInput", EditHolder)
+					W.Name = RandomString()
+					W.SizeOffset = Vector2.Zero
+					W.SizeRelative = Vector2.New(1/4 - 0.03,1)
+					W.PositionOffset = Vector2.Zero
+					W.PositionRelative = Vector2.New(1,0)
+					W.PivotPoint = Vector2.New(1,0)
+					W.JustifyText = Enums.HorizontalAlignment.Left
+					W.Text = tostring(Object[Property].W)
+					W.FontSize = 12
+					W.Placeholder = ""
+					W.TextColor = Color.FromRGB(200,200,200)
+					W.BorderColor = Color.FromRGB(35,150,245)
+					W.Color = Color.FromRGB(22,22,22)
+					W.CornerRadius = 5.5
+					W.FocusEnter:Connect(function()
+						W.BorderWidth = 2.5
+					end)
+					W.FocusExit:Connect(function()
+						W.BorderWidth = 0
+					end)
+					W.Submitted:Connect(function(Text)
+						pcall(function()
+							Object[Property] = Quaternion.New(Object[Property].X,Object[Property].Y,Object[Property].Z,tonumber(Text))
+						end)
+						W.Text = tostring(Object[Property].W)
+					end)
+					Object.PropertyChanged:Connect(function(Prop)
+						if Prop == Property then
+							X.Text = tostring(Object[Property].X)
+							Y.Text = tostring(Object[Property].Y)
+							Z.Text = tostring(Object[Property].Z)
+							W.Text = tostring(Object[Property].W)
+						end
+					end)
 				elseif Type == "number" then
 					local Box = Instance.New("UITextInput", EditHolder)
 					Box.Name = RandomString()
@@ -310,6 +701,7 @@ Update.Invoked:Connect(function(Object)
 					Box.PositionOffset = Vector2.Zero
 					Box.PositionRelative = Vector2.Zero
 					Box.PivotPoint = Vector2.Zero
+					Box.JustifyText = Enums.HorizontalAlignment.Center
 					Box.Text = tostring(Object[Property])
 					Box.FontSize = 12
 					Box.Placeholder = ""
@@ -330,7 +722,11 @@ Update.Invoked:Connect(function(Object)
 					end)
 					Box.Submitted:Connect(function(Text)
 						pcall(function()
-							Object[Property] = tonumber(Text)
+							if Text == "inf" then
+								Object[Property] = math.huge
+							else
+								Object[Property] = tonumber(Text)
+							end
 						end)
 						Box.Text = tostring(Object[Property])
 					end)
@@ -355,6 +751,16 @@ Update.Invoked:Connect(function(Object)
 					Indicated.CornerRadius = 4
 					Indicated.Color = Color.FromRGB(0,150,255)
 					Indicated.Visible = Object[Property] or false
+					
+					local Tick = Instance.New("UIImage",Indicated)
+					Tick.Name = RandomString()
+					Tick.SizeOffset = Vector2.Zero
+					Tick.SizeRelative = Vector2.New(0.9,0.9)
+					Tick.PositionOffset = Vector2.Zero
+					Tick.PositionRelative = Vector2.New(0.5,0.5)
+					Tick.PivotPoint = Vector2.New(0.5,0.5)
+					Tick.Image = LoadedIcons["Tick"]
+					Tick.Color = Color.FromRGB(50,50,50)
 					
 					local Toggle = Instance.New("UIButton", Box)
 					Toggle.Name = RandomString()
@@ -403,6 +809,8 @@ Update.Invoked:Connect(function(Object)
 				end
 			end
 			Update(Class.Inherits)
+		elseif Objects[ClassName] then
+			Update(Class.Inherits)
 		end
 	end
 	Update(Object.ClassName)
@@ -419,6 +827,7 @@ end)
 Update:Invoke(Selected)
 
 local function Make(Object, Holder, Offsetpar)
+	wait()
 	if table.find(Ignore,Object) then return end
 	local OGH = Instance.New("UIView",Holder)
 	OGH.Name = RandomString()
@@ -442,6 +851,7 @@ local function Make(Object, Holder, Offsetpar)
 	OG.Color = Object == Selected and Color.FromRGB(30,75,110) or Color.Transparent
 	
 	local Icon = Instance.New("UIImage",OG)
+	Icon.Name = RandomString()
 	Icon.Image = Objects[Object.ClassName] and Objects[Object.ClassName].Icon and LoadedIcons[Objects[Object.ClassName].Icon] or LoadedIcons[Object.ClassName] or LoadedIcons["Unknown"]
 	Icon.PositionRelative = Vector2.Zero
 	Icon.PositionOffset = Vector2.Zero
@@ -450,6 +860,7 @@ local function Make(Object, Holder, Offsetpar)
 	Icon.PivotPoint = Vector2.Zero
 	
 	local Name = Instance.New("UILabel",OG)
+	Name.Name = RandomString()
 	Name.PositionRelative = Vector2.New(1,0)
 	Name.PositionOffset = Vector2.Zero
 	Name.SizeOffset = Vector2.New(-30,0)
@@ -463,6 +874,7 @@ local function Make(Object, Holder, Offsetpar)
 	Name.HorizontalAlignment = Enums.HorizontalAlignment.Left
 	
 	local PropOpen = Instance.New("UIButton",OG)
+	PropOpen.Name = RandomString()
 	PropOpen.PositionRelative = Vector2.Zero
 	PropOpen.PositionOffset = Vector2.Zero
 	PropOpen.SizeOffset = Vector2.Zero
@@ -472,6 +884,7 @@ local function Make(Object, Holder, Offsetpar)
 	PropOpen.Text = ""
 	
 	local Indicator = Instance.New("UIImage",OG)
+	Indicator.Name = RandomString()
 	Indicator.Image = LoadedIcons["ArrowClosed"]
 	Indicator.PositionRelative = Vector2.New(0,0.5)
 	Indicator.PositionOffset = Vector2.New(0,0)
@@ -481,6 +894,7 @@ local function Make(Object, Holder, Offsetpar)
 	Indicator.Visible = #Object:GetChildren() > 0
 	
 	local Closer = Instance.New("UIButton",OGH)
+	Closer.Name = RandomString()
 	Closer.PositionRelative = Vector2.Zero
 	Closer.PositionOffset = Vector2.Zero
 	Closer.SizeOffset = Vector2.New(-Offsetpar+20,0)
@@ -511,20 +925,50 @@ local function Make(Object, Holder, Offsetpar)
 			OG.Color = Color.Transparent
 		end
 	end)
+	local bfr = CHolder.Visible
+	ExpSearch.Changed:Connect(function(Input)
+		if Input == "" then
+			CHolder.Visible = bfr
+			OGH.Visible = true
+			Indicator.Image = CHolder.Visible and Indicator.Visible and LoadedIcons["ArrowOpen"] or LoadedIcons["ArrowClosed"]
+		else
+			local Yeah = false
+			for i,v in ipairs(Object:GetDescendants()) do
+				Yeah = Yeah or Input:lower():sub(1, #v.Name) == v.Name:lower() or v.Name:lower():sub(1, #Input) == Input:lower()
+			end
+			Yeah = Yeah or Input:lower():sub(1, #Object.Name) == Object.Name:lower() or Object.Name:lower():sub(1, #Input) == Input:lower()
+			if Yeah then
+				OGH.Visible = true
+				CHolder.Visible = true
+				Indicator.Image = CHolder.Visible and Indicator.Visible and LoadedIcons["ArrowOpen"] or LoadedIcons["ArrowClosed"]
+			else
+				OGH.Visible = false
+				CHolder.Visible = false
+				Indicator.Image = CHolder.Visible and Indicator.Visible and LoadedIcons["ArrowOpen"] or LoadedIcons["ArrowClosed"]
+			end
+		end
+	end)
 	
 	Closer.Clicked:Connect(function()
 		CHolder.Visible = not CHolder.Visible and Indicator.Visible
+		bfr = CHolder.Visible
 		Indicator.Image = CHolder.Visible and Indicator.Visible and LoadedIcons["ArrowOpen"] or LoadedIcons["ArrowClosed"]
 	end)
 	for _,v in ipairs(Object:GetChildren()) do
 		Make(v,CHolder,Offsetpar + -20)
 	end
+	local function HasChild()
+		for _,v in ipairs(Object:GetChildren()) do
+			if not table.find(Ignore,v) then return true end
+		end
+		return false
+	end
 	Object.ChildAdded:Connect(function(v)
-		Indicator.Visible = #Object:GetChildren() > 0
+		Indicator.Visible = HasChild()
 		Make(v,CHolder,Offsetpar + -20)
 	end)
 	Object.ChildRemoved:Connect(function(v)
-		Indicator.Visible = #Object:GetChildren() > 0
+		Indicator.Visible = HasChild()
 		CHolder[v]:Destroy()
 	end)
 	Object.PropertyChanged:Connect(function(Prop)
